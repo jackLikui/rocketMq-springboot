@@ -1,6 +1,7 @@
 package com.rocketmq.producerandconsumer.publish.generateClass;
 
 import com.itranswarp.compiler.JavaStringCompiler;
+import com.rocketmq.producerandconsumer.publish.SimpleRocketMqListener;
 
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
@@ -14,22 +15,22 @@ import java.util.Map;
 /**
  * @ProjectName: producerandconsumer
  * @Package: com.rocketmq.producerandconsumer.publish.generateClass
- * @ClassName: GenerateClass
+ * @ClassName: RocketMqListenerGenerateFactory
  * @Author: chinasoft.k.li
  * @Description:
  * @Date: 2019/8/7 15:18
  * @Version: 1.0
  */
-public class GenerateClass {
+public class RocketMqListenerGenerateFactory {
 
-    public static Class generate(String javaName) {
+    public static Class<SimpleRocketMqListener> generate(String javaName) {
         JavaStringCompiler compiler = new JavaStringCompiler();
         Map<String, byte[]> results = null;
         try {
             String defaultSimpleRocketMqListenerImpl = JAVA_SOURCE_CODE.replaceAll("DefaultSimpleRocketMqListenerImpl", javaName);
             results = compiler.compile(javaName+".java", defaultSimpleRocketMqListenerImpl);
             Class<?> clazz = compiler.loadClass("com.rocketmq.producerandconsumer.publish.generateClass."+javaName, results);
-            return clazz;
+            return (Class<SimpleRocketMqListener>) clazz;
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {

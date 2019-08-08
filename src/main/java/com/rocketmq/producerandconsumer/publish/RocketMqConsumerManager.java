@@ -2,7 +2,7 @@ package com.rocketmq.producerandconsumer.publish;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rocketmq.producerandconsumer.publish.annotation.RocketMqEventListener;
-import com.rocketmq.producerandconsumer.publish.generateClass.GenerateClass;
+import com.rocketmq.producerandconsumer.publish.generateClass.RocketMqListenerGenerateFactory;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
@@ -22,10 +22,7 @@ import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.stereotype.Component;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.*;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.List;
@@ -76,8 +73,8 @@ public class RocketMqConsumerManager implements ApplicationContextAware, SmartIn
                             throw new IllegalStateException("Maximum one parameter is allowed for event listener method: " + listenerMethod);
                         }else{
                             String simpleRocketMqListenerName = String.format("%s%s", SimpleRocketMqListener.class.getSimpleName(), this.counter.incrementAndGet());
-                            Class<SimpleRocketMqListener> simpleRocketMqListenerClazz = GenerateClass.generate(simpleRocketMqListenerName);
-                            SimpleRocketMqListener simpleRocketMqListener = simpleRocketMqListenerClazz.newInstance();
+                            Class<SimpleRocketMqListener> simpleRocketMqListenerClazz = RocketMqListenerGenerateFactory.generate(simpleRocketMqListenerName);
+                            SimpleRocketMqListener simpleRocketMqListener = simpleRocketMqListenerClazz.getDeclaredConstructor().newInstance();
                             simpleRocketMqListener.init(listenerMethod,bean,objectMapper);
                             RocketMQMessageListener rocketMQMessageListenerAnno = simpleRocketMqListenerClazz.getAnnotation(RocketMQMessageListener.class);
                             this.setCustomPropertisToListener(rocketMQMessageListenerAnno,annotation,listenerMethod.getParameterTypes()[0].getSimpleName(),listenerMethod.getParameterTypes()[0].getSimpleName());
@@ -91,6 +88,10 @@ public class RocketMqConsumerManager implements ApplicationContextAware, SmartIn
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 } catch (InstantiationException e) {
+                    e.printStackTrace();
+                } catch (NoSuchMethodException e) {
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
                     e.printStackTrace();
                 }
             }
